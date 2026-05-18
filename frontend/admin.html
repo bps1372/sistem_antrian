@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - BPS Kota Solok</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { 
+            --primary: #0056b3; 
+            --primary-light: #e6f0ff;
+            --accent: #f39c12; 
+            --accent-light: #fef5e7; 
+            --success: #27ae60; 
+            --success-light: #e8f8f5;
+            --info: #2980b9; 
+            --info-light: #e6f2ff;
+            --danger: #e74c3c; 
+            --bg-body: #f8fafc; 
+            --bg-card: #ffffff; 
+            --text-main: #1e293b; 
+            --text-muted: #64748b; 
+            --radius-md: 16px; 
+            --shadow-sm: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+        }
+        * { box-sizing: border-box; outline: none; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { margin: 0; padding: 0; background-color: var(--bg-body); color: var(--text-main); }
+        .container { max-width: 1300px; margin: 0 auto; padding: 40px 20px; zoom: 80% }
+        
+        /* --- DASHBOARD HEADER --- */
+        .admin-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px; 
+            background: linear-gradient(to right, #ffffff, #f1f5f9); 
+            padding: 20px 30px; 
+            border-radius: var(--radius-md); 
+            box-shadow: var(--shadow-sm);
+            border-left: 6px solid var(--primary);
+        }
+        .admin-title { display: flex; align-items: center; gap: 15px; }
+        .admin-title img { height: 45px; }
+        .admin-title h1 { margin: 0; font-size: 24px; color: var(--text-main); font-weight: 800; letter-spacing: -0.5px; }
+        .admin-title p { margin: 2px 0 0 0; font-size: 13px; color: var(--text-muted); }
+        
+        /* --- BUTTONS --- */
+        .btn { border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .btn:active { transform: translateY(0); }
+        .btn-danger { background-color: var(--danger); color: white; padding: 12px 24px; font-size: 14px; box-shadow: 0 4px 14px rgba(231, 76, 60, 0.3); }
+        
+        /* TOMBOL PANGGIL KECIL */
+        .btn-panggil { width: 100%; padding: 12px 15px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-primary { background: linear-gradient(135deg, #0056b3 0%, #007bff 100%); color: white; box-shadow: 0 4px 15px rgba(0, 86, 179, 0.25); }
+        .btn-accent { background: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%); color: white; box-shadow: 0 4px 15px rgba(243, 156, 18, 0.25); }
+        
+        .btn-outline-success { background: transparent; border: 2px solid var(--success); color: var(--success); }
+        .btn-outline-success:hover { background: var(--success); color: white; }
+        .btn-outline-info { background: transparent; border: 2px solid var(--info); color: var(--info); }
+        .btn-outline-info:hover { background: var(--info); color: white; }
+
+        /* --- GRID KONTROL (4 SEJAJAR) --- */
+        .admin-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 35px; }
+        .card { 
+            background: var(--bg-card); border-radius: var(--radius-md); padding: 25px; 
+            box-shadow: var(--shadow-sm); border-top: 5px solid transparent; text-align: center; 
+            display: flex; flex-direction: column; justify-content: space-between; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; 
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+        .card h2 { font-size: 16px; margin: 0 0 5px 0; font-weight: 700; color: #334155; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        /* Ikon Background Transparan Besar */
+        .card .bg-icon { position: absolute; top: -15px; right: -15px; font-size: 80px; opacity: 0.04; pointer-events: none; transition: transform 0.3s; }
+        .card:hover .bg-icon { transform: scale(1.1) rotate(5deg); }
+
+        .current-num { font-size: 52px; font-weight: 900; color: var(--primary); margin: 15px 0; font-family: 'Segoe UI', monospace; letter-spacing: -1px; }
+        .stats { display: flex; justify-content: space-around; background: #f8fafc; padding: 12px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #f1f5f9; }
+        .stats b { display: block; font-size: 20px; color: #0f172a; }
+        .stats span { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        
+        .card-pst { border-top-color: var(--primary); }
+        .card-prioritas { border-top-color: var(--accent); background-color: #fffdf9; }
+        .card-prioritas .current-num { color: var(--accent); }
+        .card-ppid { border-top-color: var(--success); }
+        .card-pengaduan { border-top-color: var(--info); }
+
+        /* --- TABEL ANTRIAN --- */
+        .table-container { background: white; border-radius: var(--radius-md); padding: 30px; box-shadow: var(--shadow-sm); overflow-x: auto; border: 1px solid #e2e8f0; }
+        .table-container h2 { margin-top: 0; margin-bottom: 22px; color: #0f172a; font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .table-container h2 i { color: var(--primary); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #f1f5f9; padding: 16px 18px; font-size: 12px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 16px 18px; border-bottom: 1px solid #f1f5f9; font-weight: 500; font-size: 14px; color: #334155; }
+        tr:hover td { background-color: #f8fafc; }
+        
+        /* Badges Styling */
+        .badge { padding: 6px 14px; border-radius: 50px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+        .badge-menunggu { background-color: var(--accent-light); color: #c2410c; border: 1px solid #fed7aa; }
+        .badge-selesai { background-color: var(--success-light); color: #15803d; border: 1px solid #bbf7d0; }
+        .badge-loket { background-color: var(--primary-light); color: #1d4ed8; font-weight: 600; }
+
+        /* --- CUSTOM MODAL --- */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-box { background: var(--bg-card); padding: 35px; border-radius: var(--radius-md); max-width: 440px; text-align: center; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal-box h3 { margin-top: 0; color: var(--danger); font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .modal-box p { font-size: 14px; color: #475569; line-height: 1.6; margin-bottom: 30px; }
+        .modal-actions { display: flex; justify-content: center; gap: 15px; }
+        .modal-actions .btn { min-width: 120px; padding: 12px; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- FITUR LOGIN KELAS DUNIA (GLASSMORPHISM) --- */
+        .login-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: linear-gradient(135deg, rgba(0, 86, 179, 0.85) 0%, rgba(0, 210, 255, 0.85) 100%), 
+                        url('https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center/cover;
+            display: flex; justify-content: center; align-items: center; z-index: 9999; 
+        }
+        .login-box { 
+            background: rgba(255, 255, 255, 0.95); padding: 50px 40px; border-radius: 24px; 
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3); 
+            width: 100%; max-width: 420px; text-align: center; 
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-header { margin-bottom: 35px; }
+        .login-header img { height: 75px; margin-bottom: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
+        .login-header h2 { color: var(--primary); margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+        .login-header p { color: var(--text-muted); font-size: 14px; margin: 8px 0 0 0; font-weight: 500; }
+
+        .input-group { margin-bottom: 22px; text-align: left; position: relative; }
+        .input-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-wrapper i.input-icon { position: absolute; left: 16px; color: #94a3b8; font-size: 16px; transition: color 0.3s; }
+        .input-group input { 
+            width: 100%; padding: 14px 45px 14px 48px; 
+            border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; 
+            background-color: #f8fafc; transition: all 0.3s ease; color: var(--text-main);
+            font-weight: 500;
+        }
+        .input-group input:focus { border-color: var(--primary); background-color: #fff; box-shadow: 0 0 0 4px rgba(0, 86, 179, 0.15); }
+        .input-group input:focus + i.input-icon { color: var(--primary); }
+        
+        .toggle-password { position: absolute; right: 16px; color: #94a3b8; cursor: pointer; user-select: none; transition: color 0.2s; padding: 5px; }
+        .toggle-password:hover { color: var(--primary); }
+
+        #pesan-error { 
+            background: #fef2f2; color: var(--danger); font-size: 13px; 
+            padding: 14px; border-radius: 10px; margin-bottom: 25px; 
+            display: none; font-weight: 600; border-left: 4px solid var(--danger);
+            animation: shake 0.4s ease-in-out; text-align: left;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, #f39c12 0%, #d35400 100%);
+            color: white; border: none; width: 100%; padding: 15px;
+            border-radius: 12px; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s; box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 10px;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(243, 156, 18, 0.5); }
+
+        #dashboard-utama { display: none; }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .admin-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .admin-grid { grid-template-columns: 1fr; }
+            .admin-header { flex-direction: column; gap: 20px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-box">
+            <div class="login-header">
+                <img src="https://bps1372.github.io/assets/LogoBPSA.png" alt="Logo BPS">
+                <h2>Admin Panel</h2>
+                <p>Silakan masuk untuk mengelola antrian</p>
+            </div>
+            
+            <div id="pesan-error"><i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i> Error: Username atau Password salah!</div>
+
+            <div class="input-group">
+                <label>Username</label>
+                <div class="input-wrapper">
+                    <input type="text" id="input-user" placeholder="Masukkan username">
+                    <i class="fa-solid fa-user input-icon"></i>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="input-pass" placeholder="Masukkan password">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <span id="toggle-pass" class="toggle-password" onclick="togglePasswordView()"><i class="fa-solid fa-eye"></i></span>
+                </div>
+            </div>
+            
+            <button class="btn-login" onclick="prosesLogin()">Masuk Dashboard <i class="fa-solid fa-arrow-right-to-bracket" style="margin-left: 5px;"></i></button>
+        </div>
+    </div>
+
+    <div id="dashboard-utama">
+        <div id="modalReset" class="modal-overlay">
+            <div class="modal-box">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 44px; color: var(--danger); margin-bottom: 15px; display: block;"></i>
+                <h3>Konfirmasi Reset Antrian</h3>
+                <p>Apakah Pelayanan hari ini sudah tutup? Jika sudah klik <b>Oke</b>, untuk mereset nomor antrian agar kembali ke antrian pertama pada hari berikutnya. Data riwayat hari ini tetap aman di database.</p>
+                <div class="modal-actions">
+                    <button class="btn btn-outline-info" onclick="tutupModal()">Batal</button>
+                    <button class="btn btn-danger" style="background-color: var(--primary); box-shadow: none;" onclick="prosesReset()">Oke</button>
+                </div>
+            </div>
+        </div> 
+        
+        <div class="container">
+            <header class="admin-header">
+                <div class="admin-title">
+                    <img src="https://bps1372.github.io/assets/LogoBPSA.png" alt="Logo BPS">
+                    <div>
+                        <h1>Dashboard Layanan Antrian</h1>
+                        <p>Badan Pusat Statistik Kota Solok</p>
+                    </div>
+                </div>
+                <button class="btn btn-danger" onclick="resetSistem()"><i class="fa-solid fa-arrow-rotate-left"></i> Reset Antrian</button>
+            </header>
+
+            <div class="admin-grid">
+                <div class="card card-pst">
+                    <i class="fa-solid fa-users bg-icon"></i>
+                    <h2><i class="fa-solid fa-user-tie" style="color: var(--primary);"></i> Loket PST</h2>
+                    <div class="current-num" id="curr-A">---</div>
+                    <div class="stats"><div><b id="wait-A">0</b><span>Menunggu</span></div><div><b id="done-A">0</b><span>Selesai</span></div></div>
+                    <button class="btn btn-primary btn-panggil" onclick="aksiPanggil('A', 'P S T', 'PST')"><i class="fa-solid fa-volume-high"></i> Panggil PST</button>
+                </div>
+                
+                <div class="card card-prioritas">
+                    <i class="fa-solid fa-wheelchair bg-icon"></i>
+                    <h2><i class="fa-solid fa-ribbon" style="color: var(--accent);"></i> Layanan Prioritas</h2>
+                    <div class="current-num" id="curr-P">---</div>
+                    <div class="stats"><div><b id="wait-P">0</b><span>Menunggu</span></div><div><b id="done-P">0</b><span>Selesai</span></div></div>
+                    <button class="btn btn-accent btn-panggil" onclick="aksiPanggil('P', 'P S T', 'PST')"><i class="fa-solid fa-volume-high"></i> Panggil Prioritas</button>
+                </div>
+                
+                <div class="card card-ppid">
+                    <i class="fa-solid fa-circle-info bg-icon"></i>
+                    <h2><i class="fa-solid fa-circle-nodes" style="color: var(--success);"></i> Loket PPID</h2>
+                    <div class="current-num" id="curr-B">---</div>
+                    <div class="stats"><div><b id="wait-B">0</b><span>Menunggu</span></div><div><b id="done-B">0</b><span>Selesai</span></div></div>
+                    <button class="btn btn-outline-success btn-panggil" onclick="aksiPanggil('B', 'PPID', 'PPID')"><i class="fa-solid fa-volume-high"></i> Panggil PPID</button>
+                </div>
+                
+                <div class="card card-pengaduan">
+                    <i class="fa-solid fa-comments bg-icon"></i>
+                    <h2><i class="fa-solid fa-headset" style="color: var(--info);"></i> Loket Pengaduan</h2>
+                    <div class="current-num" id="curr-C">---</div>
+                    <div class="stats"><div><b id="wait-C">0</b><span>Menunggu</span></div><div><b id="done-C">0</b><span>Selesai</span></div></div>
+                    <button class="btn btn-outline-info btn-panggil" onclick="aksiPanggil('C', 'Pengaduan', 'Pengaduan')"><i class="fa-solid fa-volume-high"></i> Panggil Pengaduan</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <h2><i class="fa-solid fa-table-list"></i> Riwayat Daftar Antrian Hari Ini</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="5%">No</th>
+                            <th width="15%">Nomor Antrian</th>
+                            <th width="35%">Nama Lengkap</th>
+                            <th width="20%">Layanan</th>
+                            <th width="25%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabel-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let autoRefresh; 
+        
+        // FUNGSI TOGGLE VIEW PASSWORD (MENGGUNAKAN IKON BERSIH FONT AWESOME)
+        function togglePasswordView() {
+            const passInput = document.getElementById('input-pass');
+            const toggleIcon = document.getElementById('toggle-pass');
+            
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                toggleIcon.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+            } else {
+                passInput.type = 'password';
+                toggleIcon.innerHTML = '<i class="fa-solid fa-eye"></i>';
+            }
+        }
+
+                // FUNGSI PROSES VERIFIKASI LOGIN MELALUI DATABASE
+        async function prosesLogin() {
+            const user = document.getElementById('input-user').value;
+            const pass = document.getElementById('input-pass').value;
+            const errorText = document.getElementById('pesan-error');
+
+            // Sembunyikan pesan error sebelumnya (jika ada)
+            errorText.style.display = 'none';
+
+            try {
+                const response = await fetch('../backend/api.php?action=login_admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // Jika sukses, masuk ke dashboard
+                    document.getElementById('login-overlay').style.display = 'none';
+                    document.getElementById('dashboard-utama').style.display = 'block';
+                    
+                    loadDataAdmin();
+                    autoRefresh = setInterval(loadDataAdmin, 2000);
+                } else {
+                    // Jika gagal, tampilkan pesan error dari server
+                    errorText.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i> ' + result.pesan;
+                    errorText.style.display = 'block';
+                    
+                    // Kosongkan kolom password dan kembalikan ikon mata
+                    document.getElementById('input-pass').value = '';
+                    const passInput = document.getElementById('input-pass');
+                    const toggleIcon = document.getElementById('toggle-pass');
+                    passInput.type = 'password';
+                    toggleIcon.innerHTML = '<i class="fa-solid fa-eye"></i>';
+                }
+            } catch (e) {
+                console.error("Terjadi kesalahan:", e);
+                errorText.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i> Gagal terhubung ke server.';
+                errorText.style.display = 'block';
+            }
+        }
+
+        document.getElementById('input-pass').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                prosesLogin();
+            }
+        });
+
+        // FUNGSI MEMUAT DATA ANTRIAN DARI DATABASE
+        async function loadDataAdmin() {
+            try {
+                const response = await fetch('../backend/api.php?action=get_admin_data');
+                const db = await response.json();
+                
+                ['A', 'B', 'C', 'P'].forEach(k => {
+                    document.getElementById('wait-'+k).innerText = db.menunggu[k] || 0;
+                    document.getElementById('done-'+k).innerText = db.selesai[k] || 0;
+                    
+                    let lastDone = db.daftar.slice().reverse().find(p => p.kode_loket === k && p.status === 'Selesai');
+                    document.getElementById('curr-'+k).innerText = lastDone ? lastDone.nomor_antrian : "---";
+                });
+
+                const tbody = document.getElementById('tabel-body');
+                tbody.innerHTML = ''; 
+                if(db.daftar.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999; padding:30px;">Belum ada antrian hari ini.</td></tr>';
+                } else {
+                    db.daftar.forEach((p, idx) => {
+                        let st = p.status === 'Menunggu' ? '<span class="badge badge-menunggu"><i class="fa-regular fa-clock"></i> Menunggu</span>' : '<span class="badge badge-selesai"><i class="fa-solid fa-circle-check"></i> Dipanggil</span>';
+                        tbody.innerHTML += `<tr><td>${idx+1}</td><td style="font-weight:bold; color:var(--primary); font-size:15px;">${p.nomor_antrian}</td><td>${p.nama}</td><td><span class="badge badge-loket">${p.nama_loket}</span></td><td>${st}</td></tr>`;
+                    });
+                }
+            } catch(e) {
+                console.error("Gagal memuat data antrian.", e);
+            }
+        }
+
+        // FUNGSI TOMBOL CALL/PANGGIL ANTRIAN
+        async function aksiPanggil(kode, suaraLoket, idLayar) {
+            try {
+                const response = await fetch('../backend/api.php?action=panggil_antrian', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ kode: kode, suara_loket: suaraLoket, id_layar: idLayar })
+                });
+                const result = await response.json();
+                if(result.status === 'kosong') {
+                    alert("Belum ada antrian pengunjung yang menunggu di loket ini.");
+                } else {
+                    loadDataAdmin(); 
+                }
+            } catch(e) {
+                console.error("Gagal mengirimkan request panggilan loket.", e);
+            }
+        }
+
+        function resetSistem() {
+            document.getElementById('modalReset').style.display = 'flex';
+        }
+
+        function tutupModal() {
+            document.getElementById('modalReset').style.display = 'none';
+        }
+
+        async function prosesReset() {
+            tutupModal(); 
+            try {
+                await fetch('../backend/api.php?action=reset_layar');
+                loadDataAdmin();
+                alert("Sistem berhasil direset. Nomor antrian kembali ke awal.");
+            } catch(e) {
+                console.error("Gagal melakukan reset sistem.", e);
+            }
+        }
+    </script>
+</body>
+</html>

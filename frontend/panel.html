@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPS Kota Solok</title>
+    <style>
+        :root { --primary: #0056b3; --accent: #f39c12; --success: #27ae60; --info: #2980b9; --bg-body: #f4f7f9; --text-main: #2c3e50; --text-muted: #7f8c8d; --radius-lg: 20px; --radius-md: 12px; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        
+        /* -- PERBAIKAN: Mengatur tinggi body agar pas saat di-zoom 90% dan menghilangkan celah putih bawah -- */
+        body { 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            height: calc(100vh / 0.9); 
+            background-color: #fff; 
+            overflow: hidden; 
+            color: var(--text-main); 
+            zoom: 90%; 
+        }
+        
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,86,179,0.98); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; cursor: pointer; }
+        #overlay h1 { font-size: 36px; margin-bottom: 10px; }
+        #overlay p { font-size: 20px; background: #f39c12; padding: 15px 30px; border-radius: 50px; font-weight: bold; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-bottom: 1px solid #eee; }
+        .panel-logo { display: flex; align-items: center; gap: 15px; }
+        
+        .panel-logo img { height: 90px; } 
+        .panel-title h1 { margin: 0; font-size: 36px; color: var(--primary); } 
+        
+        .panel-clock { text-align: right; font-weight: 600; background: var(--bg-body); padding: 10px 20px; border-radius: var(--radius-md); }
+        
+        .panel-clock #time { font-size: 52px; color: var(--primary); font-weight: bold;} 
+        .panel-clock #date { font-size: 24px; color: var(--text-muted); } 
+
+        .panel-main { flex: 1; display: flex; padding: 30px; gap: 30px; }
+        .current-call { flex: 1.3; background: var(--primary); color: white; border-radius: var(--radius-lg); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; box-shadow: 0 20px 40px rgba(0,86,179,0.2); position: relative; transition: 0.3s; }
+        .current-call.highlight { background: var(--accent); box-shadow: 0 20px 50px rgba(243, 156, 18, 0.4); }
+        .current-call .lbl { font-size: 35px; text-transform: uppercase; letter-spacing: 3px; opacity: 0.8; margin-bottom: 20px; }
+        .current-call .number { font-size: 160px; font-weight: 800; line-height: 1; margin: 0; text-shadow: 0 5px 10px rgba(0,0,0,0.1); }
+        .current-call .counter { margin-top: 30px; background: rgba(255,255,255,0.1); padding: 15px 35px; border-radius: 50px; font-size: 32px; font-weight: 600; border: 1px solid rgba(255,255,255,0.2); }
+
+        .other-counters { flex: 1; display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .counter-card { background: var(--bg-body); border-radius: var(--radius-md); padding: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
+        
+        .counter-card .info h3 { margin: 0; font-size: 24px; color: var(--text-muted); } 
+        .counter-card .info p { margin: 0; font-size: 36px; font-weight: 700; color: var(--text-main); } 
+        .counter-card .num { font-size: 72px; font-weight: 700; color: var(--primary); } 
+        
+        .cc-pst { border-left: 6px solid var(--primary); }
+        .cc-ppid { border-left: 6px solid var(--success); }
+        .cc-pengaduan { border-left: 6px solid var(--info); }
+
+        .panel-footer { background: var(--primary); color: white; padding: 15px; font-size: 35px; font-weight: bold; white-space: nowrap; overflow: hidden; }
+        .marquee { display: inline-block; animation: marquee 25s linear infinite; padding-left: 100%; }
+        @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+                /* --- TAMBAHAN STYLE PANEL CUACA --- */
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .panel-weather { display: flex; align-items: center; gap: 15px; background: var(--bg-body); padding: 10px 20px; border-radius: var(--radius-md); height: 100%; }
+        .weather-icon { font-size: 46px; line-height: 1; }
+        .weather-info { display: flex; flex-direction: column; justify-content: center; }
+        .weather-temp { font-size: 32px; color: var(--primary); font-weight: bold; line-height: 1; margin-bottom: 5px; }
+        .weather-desc { font-size: 14px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        /* --- STYLE PANEL STATUS LAYANAN --- */
+        .panel-status {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-body);
+            padding: 10px 25px;
+            border-radius: var(--radius-md);
+            height: 100%;
+        }
+        .status-label {
+            font-size: 20px;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        .badge-status {
+            padding: 5px 20px;
+            border-radius: 50px;
+            font-size: 38px; /* Ukuran font status diperbesar */
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            line-height: 1;
+        }
+        .status-buka { background-color: var(--success); box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
+        .status-istirahat { background-color: var(--accent); box-shadow: 0 4px 10px rgba(243, 156, 18, 0.3); }
+        .status-tutup { background-color: #e74c3c; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3); }
+    </style>
+</head>
+<body>
+    <div id="overlay" onclick="mulaiSistem()">
+        <h1>DISPLAY ANTRIAN LAYANAN di BPS KOTA SOLOK</h1>
+        <p>KLIK DI SINI</p>
+    </div>
+
+    <header class="panel-header">
+        <div class="header-left">
+            <div class="panel-clock">
+                <div id="time">00:00:00</div>
+                <div id="date">Hari ini</div>
+            </div>
+            <div class="panel-weather">
+                <div class="weather-icon" id="weather-icon">☁️</div>
+                <div class="weather-info">
+                    <div><h3>Nan Balimo, Kota Solok</h3></div>
+                    <div class="weather-temp" id="weather-temp">--°C</div>
+                    <div class="weather-desc" id="weather-desc">Memuat...</div>
+                </div>
+            </div>
+            <!-- PANEL STATUS BARU DITAMBAHKAN DI SINI -->
+            <div class="panel-status">
+                <div class="status-label">Status Layanan</div>
+                <div id="status-kantor" class="badge-status status-tutup">TUTUP</div>
+            </div>
+        </div>
+        <div class="panel-logo">
+            <img src="https://bps1372.github.io/assets/LogoBPSA.png" alt="Logo BPS">
+        </div>
+    </header>
+
+    <main class="panel-main">
+        <div class="current-call" id="main-call-box">
+            <div class="lbl">PANGGILAN UNTUK ANTRIAN</div>
+            <h1 class="number" id="display-nomor">---</h1>
+            <div class="counter" id="display-loket">MENUNGGU ANTRIAN</div>
+        </div>
+
+        <div class="other-counters">
+            <div class="counter-card cc-pst">
+                <div class="info"><h3>LOKET</h3><p>PST</p></div><div class="num" id="status-pst">---</div>
+            </div>
+            <div class="counter-card cc-ppid">
+                <div class="info"><h3>LOKET</h3><p>PPID</p></div><div class="num" id="status-ppid">---</div>
+            </div>
+            <div class="counter-card cc-pengaduan">
+                <div class="info"><h3>LOKET</h3><p>Pengaduan</p></div><div class="num" id="status-pengaduan">---</div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="panel-footer">
+        <div class="marquee">SELAMAT DATANG DI BADAN PUSAT STATISTIK KOTA SOLOK • Melayani dengan Profesionalitas, Integritas, dan Amanah • Website: solokkota.bps.go.id • Email: bps1372@bps.go.id • Telp: (0755) 325305</div>
+    </footer>
+
+    <script>
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('time').textContent = now.toLocaleTimeString('id-ID');
+            document.getElementById('date').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }, 1000);
+
+        let waktuUpdateTerakhir = 0; // Untuk mendeteksi panggilan baru
+
+        function mulaiSistem() {
+            document.getElementById('overlay').style.display = 'none';
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); // Init audio
+            pollDataPanel();
+            // Tarik data dari database tiap 1.5 detik
+            setInterval(pollDataPanel, 1500); 
+        }
+
+        function panggilSuara(nomor, loket) {
+            if ('speechSynthesis' in window) {
+                let ejaanNomor = nomor.split('-')[0] + ', ' + nomor.split('-')[1].split('').join(' ');
+                let msg = new SpeechSynthesisUtterance(`Panggilan untuk antrian Nomor, ${ejaanNomor}, menuju loket, ${loket}`);
+                msg.lang = 'id-ID'; msg.rate = 0.85; 
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        async function pollDataPanel() {
+            try {
+                const response = await fetch('../backend/api.php?action=get_admin_data');
+                const db = await response.json();
+                const layar = db.layar;
+
+                // Update angka di loket kecil
+                document.getElementById('status-pst').innerText = layar.layar_pst;
+                document.getElementById('status-ppid').innerText = layar.layar_ppid;
+                document.getElementById('status-pengaduan').innerText = layar.layar_pengaduan;
+                
+                // Cek jika ada panggilan baru (berdasarkan timestamp waktu_update dari database)
+                if(layar.waktu_update > waktuUpdateTerakhir && layar.panggilan_nomor !== "---") {
+                    waktuUpdateTerakhir = layar.waktu_update;
+                    
+                    document.getElementById('display-nomor').innerText = layar.panggilan_nomor;
+                    document.getElementById('display-loket').innerText = "MENUJU LOKET " + layar.panggilan_loket ;
+                    
+                    panggilSuara(layar.panggilan_nomor, layar.panggilan_loket);
+                    
+                    const box = document.getElementById('main-call-box');
+                    box.classList.add('highlight');
+                    setTimeout(() => box.classList.remove('highlight'), 2000);
+                } else if (layar.panggilan_nomor === "---") {
+                    // Jika di-reset admin
+                    document.getElementById('display-nomor').innerText = "---";
+                    document.getElementById('display-loket').innerText = "MENUNGGU ANTRIAN";
+                }
+            } catch (e) {
+                console.error("Gagal menarik data layar", e);
+            }
+        }
+        async function fetchCuaca() {
+            try {
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-0.796300&longitude=100.660600&current_weather=true');
+                const data = await res.json();
+                const cuaca = data.current_weather;
+                
+                let icon = '☁️';
+                let desc = 'Berawan';
+                
+                switch (cuaca.weathercode) {
+                    case 0: icon = '☀️'; desc = 'Cerah'; break;
+                    case 1: case 2: case 3: icon = '🌤️'; desc = 'Cerah Berawan' ; break;
+                    case 45: case 48: icon = '🌫️'; desc = 'Berkabut'; break;
+                    case 51: case 53: case 55: icon = '🌦️'; desc = 'Gerimis'; break;
+                    case 61: case 63: case 65: case 80: case 81: case 82: icon = '🌧️'; desc = 'Hujan'; break;
+                    case 95: case 96: case 99: icon = '⛈️'; desc = 'Badai Petir'; break;
+                }
+
+                document.getElementById('weather-temp').innerText = Math.round(cuaca.temperature) + '°C';
+                document.getElementById('weather-icon').innerText = icon;
+                document.getElementById('weather-desc').innerText = desc;
+            } catch (error) {
+                console.error('Gagal mengambil data cuaca:', error);
+                document.getElementById('weather-desc').innerText = 'Data Offline';
+            }
+        }
+        
+        fetchCuaca();
+        setInterval(fetchCuaca, 900000);
+
+        function updateStatusKantor() {
+        const now = new Date();
+        const day = now.getDay(); // 0 = Minggu, 1 = Senin, ... 6 = Sabtu
+        const hour = now.getHours();
+        const min = now.getMinutes();
+        const timeVal = hour + (min / 60); // Contoh: 07.30 = 7.5
+
+        let statusText = "TUTUP";
+        let statusClass = "status-tutup";
+
+        // Cek jika hari Senin - Kamis
+        if (day >= 1 && day <= 4) {
+            if (timeVal >= 7.5 && timeVal < 15.5) { // Antara 07:30 sampai 15:30
+                if (timeVal >= 12 && timeVal < 13) { // 12:00 - 13:00
+                    statusText = "ISTIRAHAT";
+                    statusClass = "status-istirahat";
+                } else {
+                    statusText = "BUKA";
+                    statusClass = "status-buka";
+                }
+            }
+        } 
+        // Cek jika hari Jumat
+        else if (day === 5) {
+            if (timeVal >= 7.5 && timeVal < 16) { // Antara 07:30 sampai 16:00
+                if (timeVal >= 11.5 && timeVal < 13) { // 11:30 - 13:00
+                    statusText = "ISTIRAHAT";
+                    statusClass = "status-istirahat";
+                } else {
+                    statusText = "BUKA";
+                    statusClass = "status-buka";
+                }
+            }
+        }
+
+        // Terapkan ke elemen HTML
+        const el = document.getElementById("status-kantor");
+        if (el) { // Memastikan elemen ditemukan sebelum mengubah nilainya
+            el.textContent = statusText;
+            el.className = "badge-status " + statusClass;
+        }
+    }
+
+        // --- UPDATE PADA FUNGSI setInterval JAM ANDA YANG SUDAH ADA ---
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('time').textContent = now.toLocaleTimeString('id-ID');
+            document.getElementById('date').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            // Panggil fungsi status ini setiap detik
+            updateStatusKantor(); 
+        }, 1000);
+    </script>
+</body>
+</html>
