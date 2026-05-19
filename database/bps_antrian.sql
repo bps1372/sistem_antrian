@@ -1,3 +1,6 @@
+CREATE DATABASE IF NOT EXISTS bps_antrian;
+USE bps_antrian;
+
 -- Tabel untuk menyimpan riwayat antrian selamanya
 CREATE TABLE data_antrian (
     id INT AUTO_INCREMENT PRIMARY KEY,
